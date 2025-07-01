@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>عداد مباشر</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    .number-box {
+      font-size: 4em;
+      margin: 20px 0;
+    }
+    .input-box, .auth-box {
+      margin-top: 20px;
+    }
+    input[type="number"], input[type="password"] {
+      font-size: 2em;
+      padding: 10px;
+      width: 150px;
+      text-align: center;
+    }
+    button {
+      font-size: 1em;
+      padding: 10px 20px;
+      margin-top: 10px;
+    }
+    #editSection {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>الأرقام المباشرة</h1>
+  <div class="number-box" id="displayNumber">0</div>
+
+  <div class="auth-box" id="authBox">
+    <input type="password" id="passcodeInput" placeholder="ادخل الرقم السري">
+    <br>
+    <button onclick="authenticate()">تسجيل الدخول</button>
+  </div>
+
+  <div class="input-box" id="editSection">
+    <input type="number" id="numberInput" value="0">
+    <br>
+    <button onclick="updateNumber()">تحديث</button>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMoRlCNtccPDrPcj27Yhqb9o49KRK40RQ",
+      authDomain: "nnnn-iraq.firebaseapp.com",
+      databaseURL: "https://nnnn-iraq-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "nnnn-iraq",
+      storageBucket: "nnnn-iraq.firebasestorage.app",
+      messagingSenderId: "363352649446",
+      appId: "1:363352649446:web:9437fefbbb7f43d3ca1527"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const numberRef = db.ref("sharedNumber");
+
+    numberRef.on("value", (snapshot) => {
+      const val = snapshot.val();
+      if (val !== null) {
+        document.getElementById("displayNumber").textContent = val;
+        document.getElementById("numberInput").value = val;
+      }
+    });
+
+    function authenticate() {
+      const passcode = document.getElementById("passcodeInput").value;
+      if (passcode === "311") {
+        document.getElementById("authBox").style.display = "none";
+        document.getElementById("editSection").style.display = "block";
+      } else {
+        alert("رمز غير صحيح");
+      }
+    }
+
+    function updateNumber() {
+      const newValue = parseInt(document.getElementById("numberInput").value);
+      if (!isNaN(newValue)) {
+        numberRef.set(newValue);
+      }
+    }
+  </script>
+</body>
+</html>
