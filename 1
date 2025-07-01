@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بيانات الدينار العراقي</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    .entry {
+      font-size: 1.5em;
+      margin: 10px 0;
+    }
+    .form-section {
+      display: none;
+      margin-top: 30px;
+    }
+    input, button {
+      font-size: 1em;
+      padding: 8px;
+      margin: 5px;
+    }
+    input {
+      width: 150px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>أسعار الدينار العراقي</h1>
+
+  <div id="dataList"></div>
+
+  <div id="authBox">
+    <input type="password" id="passcodeInput" placeholder="ادخل الرقم السري">
+    <button onclick="authenticate()">تسجيل الدخول</button>
+  </div>
+
+  <div class="form-section" id="editSection">
+    <h2>إضافة رقم جديد</h2>
+    <input type="number" id="newNumber" placeholder="الرقم">
+    <input type="text" id="newLabel" placeholder="الوصف">
+    <button onclick="addEntry()">إضافة</button>
+    <div id="entryList"></div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMoRlCNtccPDrPcj27Yhqb9o49KRK40RQ",
+      authDomain: "nnnn-iraq.firebaseapp.com",
+      databaseURL: "https://nnnn-iraq-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "nnnn-iraq",
+      storageBucket: "nnnn-iraq.firebasestorage.app",
+      messagingSenderId: "363352649446",
+      appId: "1:363352649446:web:9437fefbbb7f43d3ca1527"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const listRef = db.ref("dynamicEntries");
+
+    listRef.on("value", (snapshot) => {
+      const val = snapshot.val();
+      const display = document.getElementById("dataList");
+      display.innerHTML = "";
+      if (val) {
+        Object.entries(val).forEach(([key, entry]) => {
+          const div = document.createElement("div");
+          div.className = "entry";
+          div.textContent = `${entry.number} ← ${entry.label}`;
+          display.appendChild(div);
+        });
+      }
+    });
+
+    function authenticate() {
+      const passcode = document.getElementById("passcodeInput").value;
+      if (passcode === "311") {
+        document.getElementById("authBox").style.display = "none";
+        document.getElementById("editSection").style.display = "block";
+        loadEntryList();
+      } else {
+        alert("رمز غير صحيح");
+      }
+    }
+
+    function addEntry() {
+      const number = document.getElementById("newNumber").value;
+      const label = document.getElementById("newLabel").value;
+      if (number && label) {
+        const newRef = listRef.push();
+        newRef.set({ number, label });
+        document.getElementById("newNumber").value = "";
+        document.getElementById("newLabel").value = "";
+        loadEntryList();
+      }
+    }
+
+    function loadEntryList() {
+      listRef.once("value", (snapshot) => {
+        const val = snapshot.val();
+        const list = document.getElementById("entryList");
+        list.innerHTML = "";
+        if (val) {
+          Object.entries(val).forEach(([key, entry]) => {
+            const div = document.createElement("div");
+            div.className = "entry";
+            div.textContent = `${entry.number} ← ${entry.label}`;
+            const btn = document.createElement("button");
+            btn.textContent = "🗑 حذف";
+            btn.onclick = () => listRef.child(key).remove();
+            div.appendChild(btn);
+            list.appendChild(div);
+          });
+        }
+      });
+    }
+  </script>
+</body>
+</html>
