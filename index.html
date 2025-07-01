@@ -31,11 +31,16 @@
       width: 150px;
       text-align: center;
     }
+    .total-display {
+      font-size: 1.2em;
+      margin-top: 20px;
+      color: #0f0;
+    }
   </style>
 </head>
 <body>
   <h1>المبلغ المتوفر</h1>
-
+  <div class="total-display" id="remainingTarget">المتبقي من الهدف: ...</div>
   <div id="dataList"></div>
 
   <div id="authBox">
@@ -66,18 +71,30 @@
     const db = firebase.database();
     const listRef = db.ref("dynamicEntries");
 
+    const TARGET_AMOUNT = 2000000; // 2 مليون
+
     listRef.on("value", (snapshot) => {
       const val = snapshot.val();
       const display = document.getElementById("dataList");
+      const remaining = document.getElementById("remainingTarget");
       display.innerHTML = "";
+      let total = 0;
+
       if (val) {
         Object.entries(val).forEach(([key, entry]) => {
           const div = document.createElement("div");
           div.className = "entry";
           div.textContent = `${entry.number} ← ${entry.label}`;
           display.appendChild(div);
+
+          // استخراج الرقم من النص
+          const clean = parseInt(entry.number.replace(/[^\d]/g, ""));
+          if (!isNaN(clean)) total += clean;
         });
       }
+
+      const remainingAmount = TARGET_AMOUNT - total;
+      remaining.textContent = `المتبقي من الهدف: ${remainingAmount.toLocaleString()} دينار عراقي`;
     });
 
     function authenticate() {
@@ -95,8 +112,9 @@
       const number = document.getElementById("newNumber").value;
       const label = document.getElementById("newLabel").value;
       if (number && label) {
+        const adjustedNumber = parseInt(number) * 1000; // ضرب الرقم × 1000
         const newRef = listRef.push();
-        newRef.set({ number, label });
+        newRef.set({ number: adjustedNumber.toLocaleString() + " دينار", label });
         document.getElementById("newNumber").value = "";
         document.getElementById("newLabel").value = "";
         loadEntryList();
